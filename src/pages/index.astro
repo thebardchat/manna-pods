@@ -1,0 +1,378 @@
+---
+import Layout from "../layouts/Layout.astro";
+import PodVisualizer from "../islands/PodVisualizer.svelte";
+import { VARIANTS, WIP_CONCEPTS } from "../data/pods";
+---
+<Layout>
+
+  <!-- HEADER -->
+  <header class="site-header bp-grid">
+    <div class="container hdr-inner">
+      <div class="logo">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="14" cy="14" rx="11" ry="7" stroke="#4d9fff" stroke-width="1.5"/>
+          <ellipse cx="14" cy="14" rx="6" ry="3.5" stroke="#4d9fff" stroke-width="1" stroke-dasharray="3 2"/>
+          <circle cx="14" cy="14" r="1.5" fill="#4d9fff"/>
+        </svg>
+        <span class="logo-text">MANNA PODS</span>
+        <span class="logo-sub">BGKPJR Cargo Architecture</span>
+      </div>
+      <nav class="nav">
+        <a href="#variants">Variants</a>
+        <a href="#concepts">WIP Concepts</a>
+        <a href="#mission">Mission</a>
+        <a href="https://github.com/thebardchat/BGKPJR-Launch-Vis" target="_blank" rel="noopener">Launch Vis →</a>
+        <a href="https://github.com/thebardchat/manna" target="_blank" rel="noopener">Manna Repo →</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero bp-grid">
+    <div class="container hero-inner">
+      <div class="hero-kicker label">Unmanned Cargo Pod System</div>
+      <h1 class="hero-title">
+        <span class="orb">MANNA</span><br/>
+        <span class="sub-title">Modular Aerospace Necessities & Nutrient Asset</span>
+      </h1>
+      <p class="hero-desc">
+        Where the Gryphon carries crew at 4G human-rated acceleration, Manna carries cargo at
+        2.5G – 108G. That gap unlocks dramatically higher rail exit velocities, smaller propellant
+        fractions, and cost-per-kg numbers that make sustained lunar operations economically viable.
+        Three variants cover every cargo class. Four more are in design.
+      </p>
+      <div class="hero-mission-target">
+        <div class="target-label label">Mission Target</div>
+        <div class="target-val">$200<span class="target-unit">/kg to lunar surface</span></div>
+        <div class="target-compare">vs. $1,200,000/kg via CLPS today</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VARIANTS -->
+  <section class="section" id="variants">
+    <div class="container">
+      <div class="sec-header">
+        <div class="label">Operational Variants</div>
+        <h2>Three Pods, Every Cargo Class</h2>
+        <p class="sec-desc">Each variant is tuned to a single constraint: the G-tolerance of its cargo. The pod design follows from the physics — not the other way around.</p>
+      </div>
+
+      {VARIANTS.map((pod, i) => (
+        <div class="variant-block" id={`pod-${pod.id}`}>
+          <div class="variant-grid">
+
+            <!-- 3D visualizer -->
+            <div class="variant-vis">
+              <PodVisualizer podId={pod.id} client:only="svelte" />
+            </div>
+
+            <!-- Spec sheet -->
+            <div class="variant-specs">
+              <div class="spec-header">
+                <div class="spec-id orb" style={`color:${pod.color}`}>{pod.name}</div>
+                <div class="spec-status" style={`color:${pod.color}; border-color:${pod.color}44`}>{pod.status}</div>
+              </div>
+              <div class="spec-full">{pod.full}</div>
+              <p class="spec-tagline">{pod.tagline}</p>
+
+              <div class="spec-grid">
+                <div class="spec-item">
+                  <div class="spec-lbl">Payload Fraction</div>
+                  <div class="spec-val" style={`color:${pod.color}`}>{(pod.payloadFrac*100).toFixed(1)}%</div>
+                  <div class="spec-sub">{pod.payloadKg.toLocaleString()} kg of {pod.grossKg.toLocaleString()} kg</div>
+                </div>
+                <div class="spec-item">
+                  <div class="spec-lbl">Internal G-Load</div>
+                  <div class="spec-val" style={`color:${pod.color}`}>{pod.internalG} G</div>
+                  <div class="spec-sub">{pod.externalG} G external rail peak</div>
+                </div>
+                <div class="spec-item">
+                  <div class="spec-lbl">Exit Velocity</div>
+                  <div class="spec-val">{pod.exitVms.toLocaleString()} m/s</div>
+                  <div class="spec-sub">Mach {pod.exitMach}</div>
+                </div>
+                <div class="spec-item">
+                  <div class="spec-lbl">Lunar Cost/kg</div>
+                  <div class="spec-val">${pod.costLunar.toLocaleString()}</div>
+                  <div class="spec-sub">${pod.costLEO.toLocaleString()}/kg to LEO</div>
+                </div>
+              </div>
+
+              <div class="spec-divider"></div>
+
+              <!-- Payload mass fraction bar -->
+              <div class="frac-bar-wrap">
+                <div class="frac-label label">MASS FRACTION</div>
+                <div class="frac-track">
+                  <div class="frac-payload" style={`width:${pod.payloadFrac*100}%; background:${pod.color}`}></div>
+                  <div class="frac-struct"></div>
+                </div>
+                <div class="frac-legend">
+                  <span style={`color:${pod.color}`}>Payload {(pod.payloadFrac*100).toFixed(1)}%</span>
+                  <span>Structure {((1-pod.payloadFrac)*100).toFixed(1)}%</span>
+                </div>
+              </div>
+
+              <!-- Flight stages -->
+              <div class="stages-wrap">
+                <div class="stages-label label">FLIGHT PROFILE</div>
+                <div class="stages-list">
+                  {pod.stages.map((s, si) => (
+                    <div class="stage-row">
+                      <div class="stage-num">{si+1}</div>
+                      <div class="stage-info">
+                        <div class="stage-name">{s.label}</div>
+                        <div class="stage-data">
+                          <span>G: {s.g}</span>
+                          <span>V: {s.v}</span>
+                          <span>{s.dur}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notes -->
+          <div class="variant-notes" style={`border-left-color:${pod.color}44`}>
+            <div class="notes-label label">Design Rationale</div>
+            <p>{pod.notes}</p>
+            <div class="notes-struct">
+              <div class="notes-sub-label label">Structure</div>
+              <p>{pod.structureNotes}</p>
+            </div>
+            <div class="spec-row-2">
+              <div class="spec-item2"><div class="spec-lbl">Thermal</div><div class="spec-val2">{pod.thermalShield}</div></div>
+              <div class="spec-item2"><div class="spec-lbl">Guidance</div><div class="spec-val2">{pod.guidance}</div></div>
+              <div class="spec-item2"><div class="spec-lbl">Power</div><div class="spec-val2">{pod.power}</div></div>
+            </div>
+          </div>
+
+          {i < VARIANTS.length - 1 && <div class="divider"></div>}
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <!-- WIP CONCEPTS -->
+  <section class="section wip-section" id="concepts">
+    <div class="container">
+      <div class="sec-header">
+        <div class="label">Next-Generation Concepts</div>
+        <h2>In Development</h2>
+        <p class="sec-desc">These four variants are in active design trade study. Each addresses a gap in the operational variant lineup — more propellant, more sterility, more science access, or more surface capability. Open questions are documented; answers will drive design convergence.</p>
+      </div>
+      <div class="wip-grid">
+        {WIP_CONCEPTS.map(c => (
+          <div class="wip-card" style={`--wc:${c.color}`}>
+            <div class="wip-card-top">
+              <div class="wip-name orb" style={`color:${c.color}`}>{c.name}</div>
+              <div class="wip-status">{c.status}</div>
+            </div>
+            <div class="wip-tagline">{c.tagline}</div>
+            <p class="wip-vision">{c.vision}</p>
+
+            <div class="wip-params">
+              <div class="wip-params-label label">Key Parameters</div>
+              <table class="wip-table">
+                {c.keyParams.map(([k, v]) => (
+                  <tr>
+                    <td class="wt-key">{k}</td>
+                    <td class="wt-val" style={`color:${c.color}`}>{v}</td>
+                  </tr>
+                ))}
+              </table>
+            </div>
+
+            <div class="wip-questions">
+              <div class="wip-q-label label">Open Questions</div>
+              <ul>
+                {c.openQuestions.map(q => <li>{q}</li>)}
+              </ul>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- MISSION CONTEXT -->
+  <section class="section mission-section" id="mission">
+    <div class="container">
+      <div class="sec-header">
+        <div class="label">Mission Architecture</div>
+        <h2>Supply Chain — Earth to Lunar Surface</h2>
+      </div>
+      <div class="mission-diagram">
+        <pre class="mission-ascii">{`
+  ┌──────────────────────────────────────────────────────────────────────────┐
+  │                         MANNA SUPPLY CHAIN                              │
+  │                                                                          │
+  │  [BGKPJR Rail]──→ Manna pod exits @ Mach 3.5 – 22.9                    │
+  │       ↓                                                                  │
+  │  Ballistic coast to apogee (65 – 120 min depending on variant)          │
+  │       ↓                                                                  │
+  │  [Tug — equatorial LEO @ 400 km] compliant net catch at <2 m/s         │
+  │       ↓                                                                  │
+  │  TLI burn  (+3.15 km/s posigrade, ~8 min) → 3.2-day transit            │
+  │       ↓                                                                  │
+  │  [Lunar Gateway / surface landing site]                                  │
+  │                                                                          │
+  │  Tug returns to LEO under solar-pressure assist — re-arms for next catch│
+  └──────────────────────────────────────────────────────────────────────────┘`}</pre>
+      </div>
+      <div class="mission-notes">
+        <div class="mn-item">
+          <div class="mn-label label">Tug Dependency</div>
+          <p>Manna-H can optionally execute airbag hard-landing on lunar surface (no Tug). All other variants require Tug catch — the isolation systems are not designed for unassisted impact. Tug sustainability is therefore mission-critical, which is why Manna-F (propellant tanker) is the highest-priority WIP development.</p>
+        </div>
+        <div class="mn-item">
+          <div class="mn-label label">Launch Cadence Model</div>
+          <p>Steady-state operations assume 50 Manna launches/year: ~35 Manna-H, ~10 Manna-I, ~3 Manna-B, ~2 Manna-F. At this cadence the $800/kg Phase 1 target is achievable. The $200/kg mature target requires 200 launches/year — driven by Tug refueling economics and rail amortization.</p>
+        </div>
+        <div class="mn-item">
+          <div class="mn-label label">What Manna Does NOT Do</div>
+          <p>Manna does not carry crew — that is Gryphon's role. Manna does not perform orbital insertion — that is the Tug's role. Manna does not return to Earth — empty pods are either deorbited destructively, repurposed as lunar surface structure, or returned via Tug only when economics demand it.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="site-footer bp-grid">
+    <div class="container ftr-inner">
+      <div class="ftr-brand">
+        <span class="orb">MANNA PODS</span>
+        <span class="ftr-byline">Shane Brazelton + Claude (Anthropic)</span>
+      </div>
+      <div class="ftr-links">
+        <a href="https://github.com/thebardchat/BGKPJR-Core-Simulations">Core Simulations</a>
+        <a href="https://github.com/thebardchat/manna">Manna Repo</a>
+        <a href="https://github.com/thebardchat/BGKPJR-Launch-Vis">Launch Visualizer</a>
+        <a href="https://github.com/thebardchat/tug">Orbital Tug</a>
+        <a href="https://claude.ai/referral/4fAMYN9Ing">Try Claude Free →</a>
+      </div>
+      <div class="ftr-legal mono">Pre-Phase A concept. All figures are calculated estimates — not peer-reviewed engineering. Apache 2.0.</div>
+    </div>
+  </footer>
+
+</Layout>
+
+<style>
+/* header */
+.site-header { border-bottom:1px solid #1e488c44; position:sticky; top:0; z-index:100; }
+.hdr-inner { display:flex; align-items:center; justify-content:space-between; padding-block:16px; flex-wrap:wrap; gap:12px; }
+.logo { display:flex; align-items:center; gap:10px; }
+.logo-text { font-family:'Orbitron',monospace; font-size:16px; font-weight:700; color:#4d9fff; }
+.logo-sub { font-family:'Share Tech Mono',monospace; font-size:10px; color:#3a5880; }
+.nav { display:flex; gap:24px; }
+.nav a { font-family:'Share Tech Mono',monospace; font-size:12px; color:#3a5880; transition:color .15s; }
+.nav a:hover { color:#4d9fff; text-decoration:none; }
+.orb { font-family:'Orbitron',monospace; }
+
+/* hero */
+.hero { padding-block:90px 70px; border-bottom:1px solid #1e488c22; }
+.hero-inner { display:flex; flex-direction:column; gap:28px; }
+.hero-kicker { margin-bottom:-8px; }
+.hero-title { font-size:clamp(32px,7vw,80px); font-weight:700; line-height:1.05; letter-spacing:-0.02em; }
+.sub-title { font-family:'Share Tech Mono',monospace; font-size:clamp(12px,1.8vw,18px); color:#3a5880; letter-spacing:0.04em; }
+.hero-desc { font-size:15px; color:#8faec8; max-width:640px; line-height:1.75; }
+.hero-mission-target { background:#070f1e; border:1px solid #1e488c; border-radius:12px; padding:20px 28px; width:fit-content; }
+.target-label { margin-bottom:6px; }
+.target-val { font-family:'Orbitron',monospace; font-size:36px; font-weight:700; color:#4d9fff; }
+.target-unit { font-size:18px; color:#3a5880; }
+.target-compare { font-family:'Share Tech Mono',monospace; font-size:11px; color:#3a5880; margin-top:4px; }
+
+/* section header */
+.sec-header { margin-bottom:44px; }
+.sec-header h2 { font-size:clamp(22px,4vw,40px); margin-top:8px; }
+.sec-desc { font-size:14px; color:#8faec8; max-width:640px; line-height:1.75; margin-top:10px; }
+
+/* variant block */
+.variant-block {}
+.variant-grid { display:grid; grid-template-columns:1fr 1.3fr; gap:32px; align-items:start; }
+@media(max-width:860px) { .variant-grid { grid-template-columns:1fr; } }
+.variant-vis {}
+.variant-specs {}
+.spec-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+.spec-id { font-size:28px; font-weight:900; }
+.spec-status { font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:0.1em; border:1px solid; border-radius:99px; padding:3px 10px; }
+.spec-full { font-family:'Rajdhani',sans-serif; font-size:14px; color:#3a5880; letter-spacing:0.06em; text-transform:uppercase; margin-bottom:10px; }
+.spec-tagline { font-size:13px; color:#8faec8; line-height:1.7; margin-bottom:20px; }
+.spec-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.spec-item { background:#070f1e; border:1px solid #1e488c22; border-radius:8px; padding:14px; }
+.spec-lbl { font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:0.12em; text-transform:uppercase; color:#3a5880; margin-bottom:4px; }
+.spec-val { font-family:'Rajdhani',sans-serif; font-size:22px; font-weight:700; color:#c8deff; }
+.spec-sub { font-family:'Share Tech Mono',monospace; font-size:10px; color:#3a5880; margin-top:2px; }
+.spec-divider { height:1px; background:#1e488c22; margin-block:18px; }
+
+/* mass fraction bar */
+.frac-bar-wrap { margin-bottom:20px; }
+.frac-label { margin-bottom:6px; }
+.frac-track { display:flex; height:6px; border-radius:3px; overflow:hidden; background:#070f1e; border:1px solid #1e488c22; }
+.frac-payload { height:100%; transition:width .4s; }
+.frac-struct { flex:1; background:#1e488c22; }
+.frac-legend { display:flex; gap:16px; font-family:'Share Tech Mono',monospace; font-size:10px; margin-top:6px; color:#3a5880; }
+
+/* stages */
+.stages-wrap {}
+.stages-label { margin-bottom:8px; }
+.stages-list { display:flex; flex-direction:column; gap:6px; }
+.stage-row { display:flex; gap:12px; align-items:flex-start; }
+.stage-num { font-family:'Orbitron',monospace; font-size:9px; color:#3a5880; min-width:16px; padding-top:1px; }
+.stage-info {}
+.stage-name { font-family:'Share Tech Mono',monospace; font-size:11px; color:#c8deff; }
+.stage-data { font-family:'Share Tech Mono',monospace; font-size:10px; color:#3a5880; display:flex; gap:12px; margin-top:1px; }
+
+/* notes */
+.variant-notes { margin-top:28px; background:#060d1a; border:1px solid #1e488c22; border-left:3px solid; border-radius:8px; padding:22px; }
+.notes-label { margin-bottom:8px; }
+.variant-notes p { font-size:13px; color:#8faec8; line-height:1.75; }
+.notes-struct { margin-top:18px; }
+.notes-sub-label { margin-bottom:6px; }
+.spec-row-2 { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; margin-top:20px; }
+.spec-item2 { background:#070f1e; border:1px solid #1e488c22; border-radius:8px; padding:12px; }
+.spec-val2 { font-family:'Share Tech Mono',monospace; font-size:11px; color:#8faec8; line-height:1.6; margin-top:4px; }
+
+/* WIP */
+.wip-section { background:#060d1a; border-top:1px solid #1e488c22; border-bottom:1px solid #1e488c22; }
+.wip-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px; }
+.wip-card { background:#070f1e; border:1px solid #1e488c22; border-top:2px solid var(--wc,#4d9fff); border-radius:12px; padding:24px; display:flex; flex-direction:column; gap:14px; }
+.wip-card-top { display:flex; justify-content:space-between; align-items:center; }
+.wip-name { font-size:20px; font-weight:900; }
+.wip-status { font-family:'Share Tech Mono',monospace; font-size:9px; color:#3a5880; }
+.wip-tagline { font-size:12px; color:#4d9fff; line-height:1.5; }
+.wip-vision { font-size:12px; color:#8faec8; line-height:1.75; }
+.wip-params {}
+.wip-params-label { margin-bottom:6px; }
+.wip-table { width:100%; border-collapse:collapse; }
+.wt-key { font-family:'Share Tech Mono',monospace; font-size:10px; color:#3a5880; padding:4px 0; border-bottom:1px solid #1e488c22; }
+.wt-val { font-family:'Share Tech Mono',monospace; font-size:11px; font-weight:500; padding:4px 0; border-bottom:1px solid #1e488c22; text-align:right; }
+.wip-questions {}
+.wip-q-label { margin-bottom:6px; }
+.wip-questions ul { list-style:none; display:flex; flex-direction:column; gap:6px; }
+.wip-questions li { font-family:'Share Tech Mono',monospace; font-size:10px; color:#3a5880; padding-left:12px; position:relative; line-height:1.5; }
+.wip-questions li::before { content:'?'; position:absolute; left:0; color:#1e488c; }
+
+/* mission */
+.mission-diagram { background:#040810; border:1px solid #1e488c22; border-radius:10px; padding:24px; margin-bottom:32px; overflow-x:auto; }
+.mission-ascii { font-family:'Share Tech Mono',monospace; font-size:12px; color:#3a5880; line-height:1.6; white-space:pre; }
+.mission-notes { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:24px; }
+.mn-item {}
+.mn-label { margin-bottom:8px; }
+.mn-item p { font-size:13px; color:#8faec8; line-height:1.75; }
+
+/* footer */
+.site-footer { border-top:1px solid #1e488c44; padding-block:36px; }
+.ftr-inner { display:flex; flex-direction:column; gap:18px; }
+.ftr-brand { display:flex; align-items:center; gap:14px; font-size:14px; font-weight:700; color:#4d9fff; flex-wrap:wrap; }
+.ftr-byline { font-family:'Share Tech Mono',monospace; font-size:11px; color:#3a5880; font-weight:400; }
+.ftr-links { display:flex; gap:24px; flex-wrap:wrap; }
+.ftr-links a { font-family:'Share Tech Mono',monospace; font-size:11px; color:#3a5880; }
+.ftr-links a:hover { color:#4d9fff; text-decoration:none; }
+.ftr-legal { font-family:'Share Tech Mono',monospace; font-size:10px; color:#1e488c; }
+.mono { font-family:'Share Tech Mono',monospace; }
+</style>
