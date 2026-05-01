@@ -1,7 +1,8 @@
 // Manna Cargo Pod Variants
 //
 // Reconciled 2026-04-30 to BGKPJR canonical baseline (VacuumGate v1.0).
-// All pods now share the canonical 37 km / Mach 5 / 4 G rail with the
+// Architecture validated by trajectory_closure.py simulation 2026-04-30.
+// All pods share the canonical 37 km / Mach 5 / 4 G rail with the
 // Gryphon (Phase 2 deferred) vehicle. Differentiation moves from "exit
 // velocity / external G" (which were physics-impossible at the old
 // 28.7 km baseline for the high-G variants) to "internal cushioning,
@@ -10,12 +11,16 @@
 // Source of truth: BGKPJR-Core-Simulations/simulation/src/bgkpjr_dimensions.py
 // Reconciliation rationale: BGKPJR-Core-Simulations/CANONICAL-BASELINE.md
 // Audit: BGKPJR-Core-Simulations/expert-reviews/PRE-LUKENS-AUDIT-2026-04-30.md
+// Closure proof: BGKPJR-Core-Simulations/data/trajectory-closure/FINDING-2026-04-30.md
 //
-// Mission profile (all variants):
-//   Stage 1: 37 km rail, 0 → 1,700 m/s (Mach 5), 4 G external, 43.5 sec
-//   Stage 2: Pod second-stage rocket, +5,970 m/s to LEO (7,670 m/s @ 400 km)
-//   Stage 3: Tug catch in LEO, TLI burn (+3,150 m/s), lunar transit
-//   Stage 4: Lander handoff, surface delivery; empty pod → regolith fill
+// Mission profile (all variants — SUB-ORBITAL CATCH architecture):
+//   Stage 1: 37 km rail @ 45° incline, 0 → 1,700 m/s (Mach 5), 4 G ext, 43.5 sec
+//   Stage 2: Pod 2nd-stage rocket (~900 kg propellant @ 80 kN), boost to 166 km apogee
+//   Stage 3: Tug catches pod at sub-orbital apogee, circularizes to LEO (6.13 km/s)
+//   Stage 4: Tug refuels in LEO from Manna-F propellant pod
+//   Stage 5: Tug TLI burn (+3.15 km/s), lunar transit ~3.2 days
+//   Stage 6: Lander handoff (Blue Moon Mk2 / SpaceX HLS), surface delivery
+//   Stage 7: Empty pod → regolith-filled "Space LEGO" structural unit
 
 export const VARIANTS = [
   {
@@ -34,9 +39,11 @@ export const VARIANTS = [
     notes: "The workhorse. Manna-H accepts the rail's full 4G external G-load directly into the cargo bay — no internal isolation, no active components. The 78% payload fraction and $54/kg lunar cost (mature ops, fleet-scale) make it the economic backbone of the BGKPJR supply chain. Fleet-scale operations assume ~70% of all Manna launches are Manna-H.",
     structureNotes: "Monocoque CFRP shell with aluminum honeycomb bulkheads. No isolation layer. Cargo secured with foam-in-place HDPE and steel webbing. Nose cone: 30 kg PICA-X ablator shed on atmospheric transit.",
     stages: [
-      { label: "Rail (37 km)", g: 4, v: "1,700 m/s", dur: "43.5 s" },
-      { label: "Pod 2nd-stage rocket burn", g: "0.5", v: "+5,970 m/s", dur: "~9 min" },
-      { label: "Tug catch in LEO", g: "0.01", v: "<2 m/s closing", dur: "~8 min" },
+      { label: "Rail (37 km @ 45°)", g: 4, v: "1,700 m/s", dur: "43.5 s" },
+      { label: "Pod 2nd-stage burn (boost to apogee)", g: "2.4", v: "+760 m/s vertical", dur: "~37 s" },
+      { label: "Coast to apogee (166 km)", g: 0, v: "→ 0 m/s vert", dur: "~3 min" },
+      { label: "Tug catch + circularize to LEO", g: "0.5", v: "+6,130 m/s (Tug)", dur: "~12 min" },
+      { label: "Tug refuel in LEO (Manna-F)", g: 0, v: "—", dur: "~30 min" },
       { label: "TLI burn (Tug)", g: "0.4", v: "+3,150 m/s", dur: "~8 min" },
       { label: "Lunar transit", g: 0, v: "—", dur: "~3.2 days" },
     ],
@@ -57,9 +64,11 @@ export const VARIANTS = [
     notes: "Manna-I threads the needle for electronics. The 4G external / 2.5G payload capability is achieved through a passive shock-mount isolation system: tuned-damping titanium struts isolate the inner cargo cradle from the rail's 4G impulse and the second-stage burn. Electronics rated for 5G structural margin survive cleanly with ~50% margin to spare.",
     structureNotes: "Outer CFRP monocoque rated to 4G. Inner aluminum payload cradle mounted on 12× titanium isolator struts with tuned damping (5 Hz natural frequency). Gap filled with closed-cell foam. Payload locking pins release at apogee for Tug catch.",
     stages: [
-      { label: "Rail (37 km)", g: "4 ext / 2.5 payload", v: "1,700 m/s", dur: "43.5 s" },
-      { label: "Pod 2nd-stage rocket burn", g: "0.5 ext / 0.3 payload", v: "+5,970 m/s", dur: "~9 min" },
-      { label: "Tug catch in LEO", g: "0.01", v: "<2 m/s closing", dur: "~8 min" },
+      { label: "Rail (37 km @ 45°)", g: "4 ext / 2.5 payload", v: "1,700 m/s", dur: "43.5 s" },
+      { label: "Pod 2nd-stage burn (boost to apogee)", g: "2.4 ext / 1.5 payload", v: "+760 m/s vertical", dur: "~37 s" },
+      { label: "Coast to apogee (166 km)", g: 0, v: "→ 0 m/s vert", dur: "~3 min" },
+      { label: "Tug catch + circularize to LEO", g: "0.5 ext / 0.3 payload", v: "+6,130 m/s (Tug)", dur: "~12 min" },
+      { label: "Tug refuel in LEO (Manna-F)", g: 0, v: "—", dur: "~30 min" },
       { label: "TLI burn (Tug)", g: "0.4 ext / 0.3 payload", v: "+3,150 m/s", dur: "~8 min" },
       { label: "Lunar transit", g: 0, v: "—", dur: "~3.2 days" },
     ],
@@ -80,9 +89,11 @@ export const VARIANTS = [
     notes: "Manna-B uses double-stage isolation: an outer Manna-I-class isolation frame plus an inner liquid-suspension capsule that decouples payload from all structural vibrations. Active thermal control maintains any temperature between -20 °C and +37 °C throughout the 3.2-day lunar transit. The high cost per kg is justified only by cargo with no alternative — living systems that must arrive alive.",
     structureNotes: "Outer structure same as Manna-I. Inner capsule: 304 stainless pressure vessel with fluoropolymer liner. Payload suspended in temperature-controlled liquid suspension medium. Hermetic seals rated to 5 bar. Sterile fill and seal in ISO Class 5 cleanroom.",
     stages: [
-      { label: "Rail (37 km)", g: "4 ext / 1.2 payload", v: "1,700 m/s", dur: "43.5 s" },
-      { label: "Pod 2nd-stage rocket burn", g: "0.5 ext / 0.15 payload", v: "+5,970 m/s", dur: "~9 min" },
-      { label: "Tug catch in LEO", g: "0.01", v: "<1.5 m/s closing", dur: "~10 min" },
+      { label: "Rail (37 km @ 45°)", g: "4 ext / 1.2 payload", v: "1,700 m/s", dur: "43.5 s" },
+      { label: "Pod 2nd-stage burn (boost to apogee)", g: "2.4 ext / 0.7 payload", v: "+760 m/s vertical", dur: "~37 s" },
+      { label: "Coast to apogee (166 km)", g: 0, v: "→ 0 m/s vert", dur: "~3 min" },
+      { label: "Tug catch + circularize to LEO", g: "0.5 ext / 0.15 payload", v: "+6,130 m/s (Tug)", dur: "~14 min" },
+      { label: "Tug refuel in LEO (Manna-F)", g: 0, v: "—", dur: "~30 min" },
       { label: "TLI burn (Tug)", g: "0.4 ext / 0.12 payload", v: "+3,150 m/s", dur: "~8 min" },
       { label: "Lunar transit (active TCS)", g: 0, v: "—", dur: "~3.2 days" },
     ],
